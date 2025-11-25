@@ -1,0 +1,5 @@
+{
+  "name": "CompilerViz",
+  "description": "A comprehensive visualization tool for compiler syntax analysis including First/Follow sets, LL(1), LR(0), SLR(1), and LR(1) parsing algorithms.",
+  "requestFramePermissions": []
+}
