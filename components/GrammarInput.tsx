@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface Props {
   rawGrammar: string;
@@ -30,7 +30,7 @@ const GrammarInput: React.FC<Props> = ({ rawGrammar, setRawGrammar, onParse }) =
           onClick={() => setRawGrammar(`S -> A A\nA -> a A | b`)}
           className="text-xs text-blue-500 hover:underline"
         >
-          Load S->AA Grammar
+          Load S-&gt;AA Grammar
         </button>
       </div>
       <textarea
