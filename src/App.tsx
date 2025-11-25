@@ -109,12 +109,33 @@ function App() {
       {/* Main Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
         
+        <GrammarInput 
+            rawGrammar={rawGrammar} 
+            setRawGrammar={setRawGrammar} 
+            onParse={handleParse} 
+        />
+
         {activeTab === 'SETUP' && (
-            <GrammarInput 
-                rawGrammar={rawGrammar} 
-                setRawGrammar={setRawGrammar} 
-                onParse={handleParse} 
-            />
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
+                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-2xl border border-indigo-50">
+                    <div className="bg-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    </div>
+                    <h2 className="text-3xl font-bold text-slate-800 mb-4">Welcome to CompilerViz</h2>
+                    <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                        This tool visualizes various syntax analysis algorithms including First & Follow sets, LL(1) parsing tables, and LR family (LR(0), SLR(1), LR(1)) automata.
+                    </p>
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 inline-block text-left">
+                        <p className="font-semibold text-indigo-900 mb-2">Getting Started:</p>
+                        <ol className="list-decimal list-inside space-y-2 text-indigo-800">
+                            <li>Click the <span className="font-bold">Floating Action Button</span> in the bottom-right corner.</li>
+                            <li>Enter or load a Context-Free Grammar.</li>
+                            <li>Click "Build Visualizations".</li>
+                            <li>Navigate through the tabs above to explore the results.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
         )}
 
         {activeTab === 'FIRST_FOLLOW' && firstFollow && (
