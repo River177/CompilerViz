@@ -69,11 +69,28 @@ const CCISConstructionView: React.FC<Props> = ({ history, type }) => {
           }
       });
 
-      // 2. Identify all rows needed (Transitions + Reductions)
-      const transitionKeys = Object.keys(state.transitions);
-      const itemKeys = Object.keys(groups);
-      // Union of symbols found in items and symbols found in known transitions
-      const allSyms = Array.from(new Set([...transitionKeys, ...itemKeys])).sort();
+      // 2. Determine display order based on item order
+      // We iterate through state.items again to find the FIRST occurrence of each symbol
+      const orderedSymbols: string[] = [];
+      const seenSymbols = new Set<string>();
+
+      state.items.forEach(item => {
+        if (item.dot < item.rhs.length) {
+            const sym = item.rhs[item.dot];
+            if (!seenSymbols.has(sym)) {
+                seenSymbols.add(sym);
+                orderedSymbols.push(sym);
+            }
+        }
+      });
+
+      // Add any transitions that might exist but don't have visible items (edge case)
+      Object.keys(state.transitions).forEach(sym => {
+          if (!seenSymbols.has(sym)) {
+              orderedSymbols.push(sym);
+              seenSymbols.add(sym);
+          }
+      });
 
       interface RowData {
           type: 'transition' | 'reduction';
@@ -84,7 +101,7 @@ const CCISConstructionView: React.FC<Props> = ({ history, type }) => {
 
       const rows: RowData[] = [];
 
-      allSyms.forEach(sym => {
+      orderedSymbols.forEach(sym => {
           rows.push({
               type: 'transition',
               symbol: sym,

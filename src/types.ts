@@ -31,6 +31,7 @@ export interface LRItem {
   dot: number;
   lookahead?: string; // For LR(1)
   id?: string; // Unique helper
+  index?: number; // Production index for sorting
 }
 
 export interface CanonicalState {

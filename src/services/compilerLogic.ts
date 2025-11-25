@@ -249,7 +249,9 @@ const closure = (items: LRItem[], grammar: Grammar, first: Record<string, Set<st
       const symbol = item.rhs[item.dot];
       if (grammar.nonTerminals.has(symbol)) {
         // Expand symbol
-        grammar.productions.filter(p => p.lhs === symbol).forEach(prod => {
+        grammar.productions.forEach((prod, pIdx) => {
+          if (prod.lhs !== symbol) return;
+
           let lookaheads = new Set<string>();
           
           if (type === AlgorithmType.LR1) {
@@ -278,7 +280,8 @@ const closure = (items: LRItem[], grammar: Grammar, first: Record<string, Set<st
               lhs: prod.lhs,
               rhs: prod.rhs,
               dot: 0,
-              lookahead: la
+              lookahead: la,
+              index: pIdx
             };
             const s = itemToString(newItem);
             if (!added.has(s)) {
@@ -291,6 +294,16 @@ const closure = (items: LRItem[], grammar: Grammar, first: Record<string, Set<st
       }
     }
   }
+  
+  // Sort result by production index, then dot, then lookahead
+  result.sort((a, b) => {
+      if ((a.index ?? -2) !== (b.index ?? -2)) {
+          return (a.index ?? -2) - (b.index ?? -2);
+      }
+      if (a.dot !== b.dot) return a.dot - b.dot;
+      return (a.lookahead || '').localeCompare(b.lookahead || '');
+  });
+
   return result;
 };
 
@@ -334,7 +347,8 @@ export const buildLRCollection = (grammar: Grammar, type: AlgorithmType, firstFo
     lhs: augmentedStart,
     rhs: [grammar.startSymbol],
     dot: 0,
-    lookahead: type === AlgorithmType.LR1 ? EOF : ''
+    lookahead: type === AlgorithmType.LR1 ? EOF : '',
+    index: -1
   };
 
   const startStateItems = closure([initialItem], grammar, firstFollow.first, type);
@@ -342,8 +356,6 @@ export const buildLRCollection = (grammar: Grammar, type: AlgorithmType, firstFo
   
   addSnapshot("Initialized State 0 (Closure of S' -> .S)", states, null, null, null);
 
-  const allSymbols = new Set([...grammar.terminals, ...grammar.nonTerminals]);
-  
   // Use a proper queue index to simulate BFS
   let processedIndex = 0;
   
@@ -351,7 +363,15 @@ export const buildLRCollection = (grammar: Grammar, type: AlgorithmType, firstFo
       const state = states[processedIndex];
       addSnapshot(`Processing State ${state.id}`, states, state.id, null, null);
 
-      for(const symbol of allSymbols) {
+      // Collect symbols in order of items to ensure deterministic "top-to-bottom" transitions
+      const symbolsToProcess = new Set<string>();
+      state.items.forEach(item => {
+        if (item.dot < item.rhs.length) {
+          symbolsToProcess.add(item.rhs[item.dot]);
+        }
+      });
+
+      for(const symbol of symbolsToProcess) {
         if (state.transitions[symbol] !== undefined) continue;
 
         const nextItems = goto(state.items, symbol, grammar, firstFollow.first, type);
