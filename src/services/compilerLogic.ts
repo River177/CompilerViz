@@ -3,6 +3,30 @@ import { Grammar, Production, FirstFollowResult, LRItem, CanonicalState, Parsing
 export const EPSILON = 'ε';
 export const EOF = '$';
 
+const EPSILON_ALIASES = new Set<string>([
+  EPSILON,
+  '\\\\epsilon',
+  '\\\\varepsilon',
+  '\\epsilon',
+  '\\varepsilon',
+  'epsilon',
+  'varepsilon',
+]);
+
+const normalizeSymbol = (symbol: string) => {
+  const trimmed = symbol.trim();
+  if (trimmed.length === 0) return EPSILON;
+  const lower = trimmed.toLowerCase();
+  const slashTrimmed = lower.startsWith('\\') ? lower.slice(1) : lower;
+  if (EPSILON_ALIASES.has(lower) || EPSILON_ALIASES.has(slashTrimmed)) {
+    return EPSILON;
+  }
+  return trimmed;
+};
+
+const formatRhs = (rhs: string[]) => (rhs.length === 0 ? EPSILON : rhs.join(' '));
+const formatProduction = (lhs: string, rhs: string[]) => `${lhs} -> ${formatRhs(rhs)}`;
+
 // --- Grammar Parsing ---
 export const parseGrammarInput = (input: string): Grammar => {
   const lines = input.split('\n').filter(l => l.trim().length > 0);
@@ -22,9 +46,14 @@ export const parseGrammarInput = (input: string): Grammar => {
 
     const alternatives = rhsRaw.split('|');
     alternatives.forEach(alt => {
-      const symbols = alt.trim().split(/\s+/);
-      productions.push({ lhs, rhs: symbols });
-      symbols.forEach(s => {
+      const altTrimmed = alt.trim();
+      const rawSymbols = altTrimmed.length === 0 ? [EPSILON] : altTrimmed.split(/\s+/);
+      const symbols = rawSymbols.map(normalizeSymbol);
+      const isEpsilonProduction = symbols.length === 1 && symbols[0] === EPSILON;
+      const normalizedRhs = isEpsilonProduction ? [] : symbols;
+
+      productions.push({ lhs, rhs: normalizedRhs });
+      normalizedRhs.forEach(s => {
         if (s !== EPSILON) terminals.add(s);
       });
     });
@@ -118,7 +147,7 @@ export const computeFirstFollow = (grammar: Grammar): FirstFollowResult => {
       }
       
       if (addedFromThisProd) {
-          addSnapshot(`Updated First(${lhs}) using rule ${lhs} -> ${rhs.join(' ')}`, lhs);
+          addSnapshot(`Updated First(${lhs}) using rule ${formatProduction(lhs, rhs)}`, lhs);
       }
     }
   }
@@ -172,7 +201,7 @@ export const computeFirstFollow = (grammar: Grammar): FirstFollowResult => {
         }
 
         if (addedToFollow) {
-            addSnapshot(`Updated Follow(${B}) from rule context in ${lhs} -> ${rhs.join(' ')}`, B);
+            addSnapshot(`Updated Follow(${B}) from rule context in ${formatProduction(lhs, rhs)}`, B);
         }
       }
     }
@@ -210,10 +239,10 @@ export const buildLL1Table = (grammar: Grammar, { first, follow }: FirstFollowRe
 
     firstAlpha.forEach(a => {
       if (a !== EPSILON) {
-        rows[lhs][a] = `${lhs} -> ${rhs.join(' ')}`;
+        rows[lhs][a] = formatProduction(lhs, rhs);
       } else {
         follow[lhs].forEach(b => {
-           rows[lhs][b] = `${lhs} -> ${rhs.join(' ')}`;
+           rows[lhs][b] = formatProduction(lhs, rhs);
         });
       }
     });
@@ -425,7 +454,7 @@ export const buildLRCollection = (grammar: Grammar, type: AlgorithmType, firstFo
           }
         } else {
            // Reduce
-           const prodStr = `${item.lhs} -> ${item.rhs.join(' ')}`;
+           const prodStr = formatProduction(item.lhs, item.rhs);
            const setReduce = (la: string) => {
               // Conflict check could be here
               const existing = rows[state.id][la];

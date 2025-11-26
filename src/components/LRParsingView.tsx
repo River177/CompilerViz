@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ParsingTable, Grammar, CanonicalState, AlgorithmType, ParseTreeNode, CCISStep } from '../types';
+import { EPSILON } from '../services/compilerLogic';
 import ParseTreeView from './ParseTreeView';
 import CCISConstructionView from './CCISConstructionView';
 
@@ -93,7 +94,7 @@ const LRParsingView: React.FC<Props> = ({ grammar, states, gotoTable, history: c
                 actionDesc = `Reduce ${prodContent}`;
                 
                 const [lhs, rhsRaw] = prodContent.split(' -> ');
-                const isEpsilon = rhsRaw === 'ε';
+                const isEpsilon = rhsRaw === EPSILON || rhsRaw.trim().length === 0;
                 const rhsLen = isEpsilon ? 0 : rhsRaw.split(' ').length;
 
                 const children: ParseTreeNode[] = [];
@@ -108,7 +109,7 @@ const LRParsingView: React.FC<Props> = ({ grammar, states, gotoTable, history: c
                 
                 // Handle Epsilon Node
                 if (isEpsilon) {
-                    children.push({ id: nextId(), label: 'ε', children: [] });
+                    children.push({ id: nextId(), label: EPSILON, children: [] });
                 }
 
                 const topState = stack[stack.length - 1];

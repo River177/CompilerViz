@@ -1,6 +1,6 @@
 export interface Production {
   lhs: string;
-  rhs: string[]; // array of symbols, e.g. ['A', 'B'] or ['ε']
+  rhs: string[]; // array of symbols; use [] for ε-productions
 }
 
 export interface Grammar {

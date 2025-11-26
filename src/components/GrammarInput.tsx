@@ -108,7 +108,7 @@ const GrammarInput: React.FC<Props> = ({ rawGrammar, setRawGrammar, onParse }) =
           </button>
           
           <div className="mt-auto pt-6 border-t border-slate-100 text-xs text-slate-400">
-            <p>Enter your context-free grammar above. Use '-&gt;' for productions and '|' for alternatives. 'id' is a common terminal.</p>
+            <p>Enter your context-free grammar above. Use '-&gt;' for productions and '|' for alternatives. Use 'ε' (or \\varepsilon / \\epsilon) for epsilon productions. 'id' is a common terminal.</p>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ParsingTable, Grammar, ParseTreeNode } from '../types';
+import { EPSILON } from '../services/compilerLogic';
 import ParseTreeView from './ParseTreeView';
 
 interface Props {
@@ -95,7 +96,7 @@ const LL1ParsingView: React.FC<Props> = ({ table, grammar }) => {
           const [lhs, rhsStr] = rule.split(' -> ');
           const parentNode = topItem.node;
 
-          if (rhsStr !== 'ε') {
+          if (rhsStr !== EPSILON && rhsStr.trim().length > 0) {
              const rhs = rhsStr.split(' ');
              // Create children nodes
              const childNodes = rhs.map(s => ({ id: nextId(), label: s, children: [] }));
@@ -106,11 +107,11 @@ const LL1ParsingView: React.FC<Props> = ({ table, grammar }) => {
 
              // Push to stack in reverse
              for (let i = rhs.length - 1; i >= 0; i--) {
-               currentStack.push({ symbol: rhs[i], node: childNodes[i] });
-             }
+              currentStack.push({ symbol: rhs[i], node: childNodes[i] });
+            }
           } else {
               // Epsilon case
-              const epsilonNode = { id: nextId(), label: 'ε', children: [] };
+              const epsilonNode = { id: nextId(), label: EPSILON, children: [] };
               if (parentNode) {
                   parentNode.children = [epsilonNode];
               }
