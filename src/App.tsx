@@ -3,6 +3,7 @@ import GrammarInput from './components/GrammarInput';
 import FirstFollowView from './components/FirstFollowView';
 import LL1ParsingView from './components/LL1ParsingView';
 import LRParsingView from './components/LRParsingView';
+import BooleanBackpatchView from './components/BooleanBackpatchView';
 import { 
     parseGrammarInput, 
     computeFirstFollow, 
@@ -14,7 +15,7 @@ import { AlgorithmType, Grammar, FirstFollowResult, ParsingTable, CanonicalState
 function App() {
   const [rawGrammar, setRawGrammar] = useState(`E -> E + T | T\nT -> T * F | F\nF -> ( E ) | id`);
   const [grammar, setGrammar] = useState<Grammar | null>(null);
-  const [activeTab, setActiveTab] = useState<'SETUP' | 'FIRST_FOLLOW' | 'LL1' | 'LR0' | 'SLR1' | 'LR1'>('SETUP');
+  const [activeTab, setActiveTab] = useState<'SETUP' | 'FIRST_FOLLOW' | 'LL1' | 'LR0' | 'SLR1' | 'LR1' | 'BOOLEAN'>('SETUP');
   
   // Computed Data Storage
   const [firstFollow, setFirstFollow] = useState<FirstFollowResult | null>(null);
@@ -62,6 +63,7 @@ function App() {
     { id: 'LR0', label: 'LR(0) Table' },
     { id: 'SLR1', label: 'SLR(1) Table' },
     { id: 'LR1', label: 'LR(1) Table' },
+    { id: 'BOOLEAN', label: 'Boolean Backpatch' },
   ];
 
   return (
@@ -92,7 +94,7 @@ function App() {
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        disabled={tab.id !== 'SETUP' && !grammar}
+                        disabled={tab.id !== 'SETUP' && tab.id !== 'BOOLEAN' && !grammar}
                         className={`px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
                             activeTab === tab.id 
                             ? 'border-white text-white' 
@@ -174,6 +176,10 @@ function App() {
                 history={lrData[AlgorithmType.LR1]!.history}
                 type={AlgorithmType.LR1}
             />
+        )}
+
+        {activeTab === 'BOOLEAN' && (
+            <BooleanBackpatchView />
         )}
       </main>
 
