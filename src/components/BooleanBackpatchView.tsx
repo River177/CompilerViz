@@ -271,18 +271,24 @@ const ParseTreeVisualization: React.FC<{
     if (!currentStepData || !currentStepData.action) return false;
     
     const action = currentStepData.action;
+    const currentNode = currentStepData.currentNode;
+    
+    // Only highlight if this is the current node or a direct child of the current node
+    const isCurrentOrChild = currentNode === n || currentNode?.children?.includes(n);
+    
+    if (!isCurrentOrChild) return false;
     
     if (action.includes('回填') && currentStepData.details?.list) {
       if (attr === 'truelist' && n.truelist?.some(i => currentStepData.details?.list?.includes(i))) return true;
       if (attr === 'falselist' && n.falselist?.some(i => currentStepData.details?.list?.includes(i))) return true;
     }
     
-    if (action.includes('OR') || action.includes('AND')) {
+    if ((action.includes('OR') || action.includes('AND')) && currentNode === n) {
       return true;
     }
     
-    if (action.includes('标记点') && attr === 'instr') {
-      return n.type === 'MARKER';
+    if (action.includes('标记点') && attr === 'instr' && n.type === 'MARKER') {
+      return true;
     }
     
     return false;
@@ -501,7 +507,7 @@ const InstructionTable: React.FC<{ instructions: Instruction[] }> = ({ instructi
             <td className="px-4 py-2 font-mono text-slate-800 border-b border-slate-200">
               {instr.target !== undefined ? (
                 <span>
-                  {instr.code.replace('_', '')}
+                  {instr.code.split('_')[0]}
                   <span className="text-green-600 font-bold">{instr.target}</span>
                 </span>
               ) : (

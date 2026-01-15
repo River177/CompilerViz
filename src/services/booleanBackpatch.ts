@@ -445,7 +445,6 @@ export class BooleanExpressionParser {
     for (const instr of list) {
       if (this.instructions[instr - 100]) {
         this.instructions[instr - 100].target = target;
-        this.instructions[instr - 100].code = this.instructions[instr - 100].code.replace('_', target.toString());
       }
     }
   }
